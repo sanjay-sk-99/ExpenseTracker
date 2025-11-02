@@ -52,6 +52,42 @@ exports.deleteExpense = async (req, res) => {
     }
 }
 
+//update expense source
+exports.updateExpense = async (req, res) => {
+  const userId = req.user.id;
+  try {
+     const { icon, category, amount, date } = req.body;
+    //validation check for missing fields
+    if (!category || !amount || !date) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+
+    const updateData = {
+       userId,
+            icon,
+            category,
+            amount,
+            date: new Date(date)
+    };
+
+    const updateExpense = await Expense.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      {
+        new: true,
+      }
+    );
+
+    if (!updateExpense) {
+      return res.status(404).json({ message: "Expense not found" });
+    }
+    
+    res.status(200).json(updateExpense);
+  } catch (err) {
+    res.status(500).json({ message: "server Error", error: err.message });
+  }
+};
+
 //download expense in excel
 exports.downloadExpenseExcel = async (req, res) => {
     const userId = req.user.id;

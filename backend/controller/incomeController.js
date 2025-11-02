@@ -1,68 +1,104 @@
-const xlsx = require("xlsx")
-const Income = require("../models/Income")
+const xlsx = require("xlsx");
+const Income = require("../models/Income");
 
 //add income source
 exports.addIncome = async (req, res) => {
-    // From protect middleware
-    const userId = req.user.id;
+  // From protect middleware
+  const userId = req.user.id;
 
-    try {
-        const { icon, source, amount, date } = req.body;
+  try {
+    const { icon, source, amount, date } = req.body;
 
-        //validation check for missing fields
-        if (!source || !amount || !date) {
-            return res.status(400).json({ message: "All fields required" })
-        }
-
-        const newIncome = new Income({
-            userId,
-            icon,
-            source,
-            amount,
-            date: new Date(date)
-        })
-
-        //Save to MongoDB
-        await newIncome.save();
-
-        res.status(200).json(newIncome)
-    } catch (err) {
-        res.status(500).json({ message: "server Error" })
+    //validation check for missing fields
+    if (!source || !amount || !date) {
+      return res.status(400).json({ message: "All fields required" });
     }
-}
+
+    const newIncome = new Income({
+      userId,
+      icon,
+      source,
+      amount,
+      date: new Date(date),
+    });
+
+    //Save to MongoDB
+    await newIncome.save();
+
+    res.status(200).json(newIncome);
+  } catch (err) {
+    res.status(500).json({ message: "server Error" });
+  }
+};
 
 //get all income source
 exports.getAllIncome = async (req, res) => {
-    const userId = req.user.id;
+  const userId = req.user.id;
 
-    try {
-        const income = await Income.find({ userId }).sort({ date: -1 })
-        res.json(income)
-    } catch (err) {
-        res.status(500).json({ message: "server Error" })
-    }
-}
+  try {
+    const income = await Income.find({ userId }).sort({ date: -1 });
+    res.json(income);
+  } catch (err) {
+    res.status(500).json({ message: "server Error" });
+  }
+};
 
 //delete income source
 exports.deleteIncome = async (req, res) => {
-    try {
-        await Income.findByIdAndDelete(req.params.id);
-        res.json({ message: "Income deleted successfully" })
-    } catch (err) {
-        res.status(500).json({ message: "server Error" })
+  try {
+    await Income.findByIdAndDelete(req.params.id);
+    res.json({ message: "Income deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "server Error" });
+  }
+};
+
+//update income source
+exports.updateIncome = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const { icon, source, amount, date } = req.body;
+    //validation check for missing fields
+    if (!source || !amount || !date) {
+      return res.status(400).json({ message: "All fields required" });
     }
-}
+
+    const updateData = {
+      userId,
+      icon,
+      source,
+      amount,
+      date: new Date(date),
+    };
+
+    const updateIncome = await Income.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      {
+        new: true,
+      }
+    );
+
+    if (!updateIncome) {
+      return res.status(404).json({ message: "Income not found" });
+    }
+    
+    res.status(200).json(updateIncome);
+  } catch (err) {
+    res.status(500).json({ message: "server Error", error: err.message });
+  }
+};
 
 //download income in excel
 exports.downloadIncomeExcel = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    // Fetch and sort records 
+    // Fetch and sort records
     const income = await Income.find({ userId }).sort({ date: -1 });
 
     // Map to plain objects for the sheet
-    const data = income.map(item => ({
+    const data = income.map((item) => ({
       Source: item.source,
       Amount: item.amount,
       Date: item.date,

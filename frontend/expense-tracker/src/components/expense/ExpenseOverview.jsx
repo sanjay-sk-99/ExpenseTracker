@@ -3,7 +3,7 @@ import { LuPlus } from 'react-icons/lu'
 import CustomLineChart from '../charts/CustomLineChart'
 import { prepareExpenseLineChartData } from '../../utils/helper'
 
-const IncomeOverview = ({ transactions, onAddExpense }) => {
+const ExpenseOverview = ({ transactions, onAddExpense }) => {
 
     const [chartData, setChartData] = useState([]);
 
@@ -35,4 +35,4 @@ const IncomeOverview = ({ transactions, onAddExpense }) => {
     )
 }
 
-export default IncomeOverview
+export default ExpenseOverview
