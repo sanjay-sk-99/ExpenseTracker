@@ -1,17 +1,9 @@
 const multer = require("multer")
 
-//configure storage
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/')
-    },
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`)
-    }
-})
+// Use memory storage instead of disk storage
+const storage = multer.memoryStorage()
 
-//file filter
-
+// File filter
 const fileFilter = (req, file, cb) => {
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
     if (allowedTypes.includes(file.mimetype)) {
@@ -21,6 +13,12 @@ const fileFilter = (req, file, cb) => {
     }
 }
 
-const upload = multer({ storage, fileFilter })
+const upload = multer({ 
+    storage: storage, 
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB limit
+    },
+    fileFilter 
+})
 
-module.exports = upload;
+module.exports = upload
